@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reflective Sphere with Floating Animation</title>
+  <style>body { margin: 0; overflow: hidden; }</style>
+</head>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+  <script>
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 2, 5);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    document.body.appendChild(renderer.domElement);
+
+    // 環境貼圖
+    const loader = new THREE.CubeTextureLoader();
+    const envMap = loader.load([
+      'https://threejs.org/examples/textures/cube/Bridge2/posx.jpg',
+      'https://threejs.org/examples/textures/cube/Bridge2/negx.jpg',
+      'https://threejs.org/examples/textures/cube/Bridge2/posy.jpg',
+      'https://threejs.org/examples/textures/cube/Bridge2/negy.jpg',
+      'https://threejs.org/examples/textures/cube/Bridge2/posz.jpg',
+      'https://threejs.org/examples/textures/cube/Bridge2/negz.jpg',
+    ]);
+    scene.background = envMap;
+
+    // 地板
+    const texLoader = new THREE.TextureLoader();
+    const floorTex = texLoader.load('https://threejs.org/examples/textures/checker.png');
+    floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
+    floorTex.repeat.set(20, 20);
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(100, 100),
+      new THREE.MeshStandardMaterial({ map: floorTex })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    scene.add(floor);
+
+    // 鏡面立方體
+    const cube = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 1.5, 1.5),
+      new THREE.MeshStandardMaterial({
+        envMap: envMap,
+        metalness: 1.0,
+        roughness: 0.0
+      })
+    );
+    cube.position.set(-2.5, 0.75, 0);
+    scene.add(cube);
+
+    // 金屬反射球（會漂浮）
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(0.9, 64, 64),
+      new THREE.MeshStandardMaterial({
+        envMap: envMap,
+        metalness: 1.0,
+        roughness: 0.05
+      })
+    );
+    sphere.position.set(2.5, 0.9, 0);
+    scene.add(sphere);
+
+    // 中間玻璃柱
+    const glassMat = new THREE.MeshStandardMaterial({
+      color: 0xccccff,
+      metalness: 0.7,
+      roughness: 0.1,
+      envMap: envMap,
+      transparent: true,
+      opacity: 0.6
+    });
+    const glassBox = new THREE.Mesh(
+      new THREE.BoxGeometry(0.5, 3, 0.5),
+      glassMat
+    );
+    glassBox.position.set(0, 1.5, -0.5);
+    glassBox.rotation.z = Math.PI / 4;
+    scene.add(glassBox);
+
+    // 燈光
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 10, 7);
+    scene.add(light);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambient);
+
+    const clock = new THREE.Clock();
+
+    // 動畫
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const t = clock.getElapsedTime();
+
+      cube.rotation.y += 0.01;
+      sphere.rotation.y = Math.sin(t * 2) * 0.05; // 輕微旋轉
+      sphere.position.y = 0.9 + Math.sin(t * 2) * 0.3; // ✅ 上下漂浮
+
+      glassBox.rotation.y += 0.002;
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
