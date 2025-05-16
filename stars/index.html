@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reflective Sci-Fi Scene</title>
+  <style>body { margin: 0; overflow: hidden; }</style>
+</head>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/cameras/CubeCamera.js"></script>
+
+  <script>
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#3b1b66');
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 4, 10);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    document.body.appendChild(renderer.domElement);
+
+    // 六邊形地板
+    const hex = new THREE.Mesh(
+      new THREE.CylinderGeometry(6, 6, 0.5, 6),
+      new THREE.MeshStandardMaterial({ color: '#7766ff', metalness: 0.6, roughness: 0.3 })
+    );
+    hex.rotation.y = Math.PI / 6;
+    hex.position.y = 0.25;
+    scene.add(hex);
+
+    // 星星背景
+    const stars = new THREE.BufferGeometry();
+    const starVerts = [];
+    for (let i = 0; i < 800; i++) {
+      starVerts.push((Math.random() - 0.5) * 200, Math.random() * 80, (Math.random() - 0.5) * 200);
+    }
+    stars.setAttribute('position', new THREE.Float32BufferAttribute(starVerts, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.3 });
+    scene.add(new THREE.Points(stars, starMat));
+
+    // CubeCamera
+    const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256, {
+      format: THREE.RGBAFormat,
+      generateMipmaps: true,
+      minFilter: THREE.LinearMipmapLinearFilter
+    });
+    const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
+    scene.add(cubeCamera);
+
+    // 反射球
+    const reflectiveSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 64, 64),
+      new THREE.MeshStandardMaterial({ envMap: cubeRenderTarget.texture, metalness: 1, roughness: 0 })
+    );
+    reflectiveSphere.position.set(3, 2, 0);
+    scene.add(reflectiveSphere);
+
+    // 幾何方塊
+    const cube = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 1.5, 1.5),
+      new THREE.MeshStandardMaterial({ color: '#5533ff', emissive: '#2200ff', emissiveIntensity: 0.2 })
+    );
+    cube.position.set(-3, 1.75, 0);
+    scene.add(cube);
+
+    // 玻璃盒
+    const glassBox = new THREE.Mesh(
+      new THREE.BoxGeometry(0.5, 3, 0.5),
+      new THREE.MeshStandardMaterial({
+        color: 0x88bbff,
+        metalness: 0.5,
+        roughness: 0.05,
+        transparent: true,
+        opacity: 0.5
+      })
+    );
+    glassBox.position.set(0, 2.5, -0.5);
+    glassBox.rotation.z = Math.PI / 4;
+    scene.add(glassBox);
+
+    // 背景球（亮 + 放大）
+    const backgroundSpheres = [
+      [20, 10, -30],
+      [-15, 13, -25],
+      [0, 17, -35],
+      [-25, 12, -45],
+      [30, 15, -40]
+    ];
+    backgroundSpheres.forEach(pos => {
+      const s = new THREE.Mesh(
+        new THREE.SphereGeometry(5, 32, 32),
+        new THREE.MeshStandardMaterial({
+          color: '#9966ff',
+          metalness: 0.3,
+          roughness: 0.05,
+          emissive: '#331188',
+          emissiveIntensity: 0.5
+        })
+      );
+      s.position.set(...pos);
+      s.scale.set(1.5, 1.5, 1.5);
+      scene.add(s);
+    });
+
+    // ✅ 左側改為 Octahedron 八面體
+    const octa = new THREE.Mesh(
+      new THREE.OctahedronGeometry(1.6),
+      new THREE.MeshStandardMaterial({
+        color: '#ff66cc',
+        metalness: 0.7,
+        roughness: 0.2,
+        emissive: '#661133',
+        emissiveIntensity: 0.3
+      })
+    );
+    octa.position.set(-10, 3, -5);
+    scene.add(octa);
+
+    // 右側能量塔 Cone
+    const cone = new THREE.Mesh(
+      new THREE.ConeGeometry(1.5, 4, 32),
+      new THREE.MeshStandardMaterial({ color: '#33ffe0', metalness: 0.6, roughness: 0.2 })
+    );
+    cone.position.set(10, 2, -5);
+    scene.add(cone);
+
+    // Arc
+    const arc = new THREE.Mesh(
+      new THREE.TorusGeometry(4, 0.3, 16, 100),
+      new THREE.MeshStandardMaterial({ color: '#cc66ff', metalness: 0.8, roughness: 0.2 })
+    );
+    arc.position.set(0, 6, -20);
+    arc.rotation.x = Math.PI / 2;
+    scene.add(arc);
+
+    // 光源
+    const light = new THREE.DirectionalLight(0xffffff, 1.2);
+    light.position.set(5, 15, 10);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+    // 動畫
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      cube.rotation.y += 0.01;
+      glassBox.rotation.y += 0.002;
+      reflectiveSphere.rotation.y += 0.01;
+      octa.rotation.y += 0.005;
+      cone.rotation.y -= 0.004;
+      reflectiveSphere.position.y = 2 + Math.sin(t * 2) * 0.3;
+
+      reflectiveSphere.visible = false;
+      cubeCamera.update(renderer, scene);
+      reflectiveSphere.visible = true;
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
