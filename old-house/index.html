@@ -18,7 +18,7 @@
   renderer.physicallyCorrectLights = true;
   document.body.appendChild(renderer.domElement);
 
-  // ⭐ 星空背景 & 環境貼圖
+  // 環境貼圖
   const texLoader = new THREE.TextureLoader();
   texLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/2294472375_24a3b8ef46_o.jpg', texture => {
     texture.mapping = THREE.EquirectangularReflectionMapping;
@@ -26,7 +26,7 @@
     scene.background = texture;
     scene.environment = texture;
 
-    // ⭐ 初始化物件需等貼圖載入後
+    // 初始化物件需等貼圖載入後
     initObjects(texture);
     animate();
   });
