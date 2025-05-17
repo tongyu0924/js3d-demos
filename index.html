@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Normal Color Scene</title>
+  <style>body { margin: 0; overflow: hidden; }</style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+<script>
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(0, 5, 10);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// 使用 MeshNormalMaterial 呈現 RGB 彩色風格
+const normalMat = new THREE.MeshNormalMaterial();
+
+// 地板
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 20),
+  normalMat
+);
+floor.rotation.x = -Math.PI / 2;
+scene.add(floor);
+
+// 幾何物體 1: 立方體
+const cube = new THREE.Mesh(
+  new THREE.BoxGeometry(2, 2, 2),
+  normalMat
+);
+cube.position.set(-4, 1, 0);
+scene.add(cube);
+
+// 幾何物體 2: 圓環
+const torus = new THREE.Mesh(
+  new THREE.TorusGeometry(1, 0.4, 16, 100),
+  normalMat
+);
+torus.position.set(0, 1.5, 0);
+scene.add(torus);
+
+// 幾何物體 3: 圓柱體
+const cylinder = new THREE.Mesh(
+  new THREE.CylinderGeometry(1, 1, 2, 32),
+  normalMat
+);
+cylinder.position.set(4, 1, 0);
+scene.add(cylinder);
+
+// 動畫
+function animate() {
+  requestAnimationFrame(animate);
+  cube.rotation.x += 0.01;
+  cube.rotation.y += 0.01;
+  torus.rotation.y += 0.015;
+  cylinder.rotation.x += 0.005;
+  renderer.render(scene, camera);
+}
+animate();
+
+// Resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
