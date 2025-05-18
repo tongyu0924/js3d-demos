@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Bigger Ripple Reflective Scene</title>
+  <title>Night Scene with Stars, Blue Water, and Big Ripples</title>
   <style>body { margin: 0; overflow: hidden; }</style>
 </head>
 <body>
@@ -12,7 +12,7 @@
   scene.background = new THREE.Color('#120030');
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.set(0, 3, 12); 
+  camera.position.set(0, 3, 12);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -23,39 +23,18 @@
   const stars = new THREE.BufferGeometry();
   const starVerts = [];
   for (let i = 0; i < 300; i++) {
-    starVerts.push((Math.random() - 0.5) * 200, Math.random() * 80, (Math.random() - 0.5) * 200);
+    starVerts.push(
+      (Math.random() - 0.5) * 200,
+      Math.random() * 100,
+      (Math.random() - 0.5) * 200
+    );
   }
   stars.setAttribute('position', new THREE.Float32BufferAttribute(starVerts, 3));
-  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.6 });
-  scene.add(new THREE.Points(stars, starMat));
+  const starMat = new THREE.PointsMaterial({color: 0xffffff, size: 0.3, sizeAttenuation: true});
+  const starPoints = new THREE.Points(stars, starMat);
+  scene.add(starPoints);
 
-  // 更亮的水面
-  const water = new THREE.Mesh(
-    new THREE.PlaneGeometry(200, 200),
-    new THREE.MeshStandardMaterial({
-      color: 0x4477aa,
-      metalness: 0.6,
-      roughness: 0.15,
-      envMapIntensity: 1.0,
-      transparent: true,
-      opacity: 0.95
-    })
-  );
-  water.rotation.x = -Math.PI / 2;
-  scene.add(water);
-
-  // 光源
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
-  directionalLight.position.set(5, 15, 10);
-  scene.add(directionalLight);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-
-  // 中央點光源打亮平台/水面
-  const glowLight = new THREE.PointLight(0x88ccff, 2.5, 20);
-  glowLight.position.set(0, 2, 0);
-  scene.add(glowLight);
-
-  // CubeCamera for reflections
+  // 反射相機
   const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256, {
     format: THREE.RGBAFormat,
     generateMipmaps: true,
@@ -63,6 +42,53 @@
   });
   const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
   scene.add(cubeCamera);
+
+  // 🌊 藍色水面
+  const water = new THREE.Mesh(
+    new THREE.PlaneGeometry(200, 200),
+    new THREE.MeshPhysicalMaterial({
+      color: 0x3399ff,
+      metalness: 0.8,
+      roughness: 0.05,
+      clearcoat: 1.0,
+      reflectivity: 1.0,
+      transmission: 0.4,
+      thickness: 1.0,
+      transparent: true,
+      opacity: 0.98,
+      envMapIntensity: 2.5
+    })
+  );
+  water.rotation.x = -Math.PI / 2;
+  scene.add(water);
+
+  // 淡淡表面光暈
+  const surfaceGlow = new THREE.Mesh(
+    new THREE.PlaneGeometry(200, 200),
+    new THREE.MeshBasicMaterial({
+      color: 0x88ccff,
+      transparent: true,
+      opacity: 0.04,
+      depthWrite: false
+    })
+  );
+  surfaceGlow.rotation.x = -Math.PI / 2;
+  surfaceGlow.position.y = 0.05;
+  scene.add(surfaceGlow);
+
+  // 🌟 光源
+  scene.add(new THREE.DirectionalLight(0xffffff, 1.2).position.set(5, 15, 10));
+  scene.add(new THREE.AmbientLight(0xffffff, 1.1));
+
+  const glowLight = new THREE.PointLight(0x88ccff, 2.5, 20);
+  glowLight.position.set(0, 2, 0);
+  scene.add(glowLight);
+
+  const spotLight = new THREE.SpotLight(0x88ccff, 1.5, 20, Math.PI / 4, 0.5);
+  spotLight.position.set(0, 8, 0);
+  spotLight.target.position.set(0, 0, 0);
+  scene.add(spotLight);
+  scene.add(spotLight.target);
 
   // 平台
   const hex = new THREE.Mesh(
@@ -73,20 +99,20 @@
   hex.position.y = 0.25;
   scene.add(hex);
 
-  // 反射球體
+  // 反射球
   const reflectiveSphere = new THREE.Mesh(
     new THREE.SphereGeometry(1.4, 64, 64),
-    new THREE.MeshStandardMaterial({ 
-      envMap: cubeRenderTarget.texture, 
-      metalness: 1, 
-      roughness: 0, 
-      envMapIntensity: 2 
+    new THREE.MeshStandardMaterial({
+      envMap: cubeRenderTarget.texture,
+      metalness: 1,
+      roughness: 0,
+      envMapIntensity: 2
     })
   );
   reflectiveSphere.position.set(2.3, 2, 0);
   scene.add(reflectiveSphere);
 
-  // 發光立方體
+  // 發光方塊
   const cube = new THREE.Mesh(
     new THREE.BoxGeometry(1.3, 1.3, 1.3),
     new THREE.MeshStandardMaterial({ color: '#5533ff', emissive: '#2200ff', emissiveIntensity: 0.2 })
@@ -126,39 +152,53 @@
   bigDome.position.set(0, 2.4, 0);
   scene.add(bigDome);
 
-  // 更大的波紋
-  const rippleMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.5,
-    side: THREE.DoubleSide
-  });
-  const rippleGeometry = new THREE.RingGeometry(0.6, 0.75, 64);  // 原本是 0.1 - 0.12
-  const ripple = new THREE.Mesh(rippleGeometry, rippleMaterial);
-  ripple.rotation.x = -Math.PI / 2;
-  ripple.position.set(2.3, 0.02, 0);
-  scene.add(ripple);
+  // 波紋
+  const ripples = [];
+  for (let i = 0; i < 3; i++) {
+    const ripple = new THREE.Mesh(
+      new THREE.RingGeometry(0.8, 1.3, 64),
+      new THREE.MeshBasicMaterial({
+        color: 0x88ddff,
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      })
+    );
+    ripple.rotation.x = -Math.PI / 2;
+    ripple.userData.scale = 1.0 + i * 0.4;
+    scene.add(ripple);
+    ripples.push(ripple);
+  }
 
-  // 動畫
+  // 🕒 動畫
   const clock = new THREE.Clock();
-  let rippleScale = 0.1;
   function animate() {
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
-    cube.rotation.y += 0.01;
-    glassBox.rotation.y += 0.002;
+    // 星星閃爍（可選）
+    starMat.size = 1.0 + Math.sin(t * 2.5) * 0.2;
+
     reflectiveSphere.rotation.y += 0.01;
     reflectiveSphere.position.y = 2 + Math.sin(t * 2) * 0.3;
     bigDome.rotation.y += 0.002;
+    bigDome.position.y = 2.4 + Math.sin(t * 1.5) * 0.2;
 
-    // 波紋動畫
-    rippleScale += 0.03;
-    ripple.scale.set(rippleScale, rippleScale, rippleScale);
-    ripple.material.opacity = Math.max(0, 0.5 - rippleScale * 0.1);
-    if (rippleScale > 5.0) rippleScale = 0.1;
+    cube.rotation.y += 0.01;
+    glassBox.rotation.y += 0.002;
 
-    // 反射更新
+    ripples.forEach(r => {
+      r.userData.scale += 0.025;
+      r.scale.set(r.userData.scale, r.userData.scale, r.userData.scale);
+      r.material.opacity = Math.max(0, 0.6 - r.userData.scale * 0.1);
+      r.position.set(reflectiveSphere.position.x, 0.02, reflectiveSphere.position.z);
+      if (r.userData.scale > 6.0) {
+        r.userData.scale = 1.0;
+      }
+    });
+
     reflectiveSphere.visible = false;
     cubeCamera.update(renderer, scene);
     reflectiveSphere.visible = true;
@@ -175,6 +215,5 @@
 </script>
 </body>
 </html>
-
 
 
