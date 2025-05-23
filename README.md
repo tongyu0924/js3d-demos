@@ -4,7 +4,7 @@ A collection of 3D scenes built with [Three.js](https://threejs.org/) demonstrat
 
 ---
 
-## 🔮 1. Mirror Sphere with HDR Environment
+## ✨ 1. Mirror Sphere with HDR Environment
 
 This scene showcases physically-based rendering (PBR) using a mirror-like reflective sphere, a transparent glass bar, and realistic lighting with an outdoor HDR background.
 
@@ -26,5 +26,5 @@ A mysterious indoor setup using HDR environment mapping inside a weathered room,
 
 A simple interactive scene with basic shapes (cube, torus, and cylinder) rendered in vibrant color gradients, designed for experimenting with geometry, lighting, and shading.
 
-**Preview**: [`index.html`](./geometry-playground/index.html)  
+**Code**: [`index.html`](./geometry-playground/index.html)  
 ![Geometry Playground](./img.png)
