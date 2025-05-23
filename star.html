@@ -43,7 +43,7 @@
   const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
   scene.add(cubeCamera);
 
-  // 🌊 藍色水面
+  // 藍色水面
   const water = new THREE.Mesh(
     new THREE.PlaneGeometry(200, 200),
     new THREE.MeshPhysicalMaterial({
@@ -62,7 +62,7 @@
   water.rotation.x = -Math.PI / 2;
   scene.add(water);
 
-  // 淡淡表面光暈
+  // 表面光暈
   const surfaceGlow = new THREE.Mesh(
     new THREE.PlaneGeometry(200, 200),
     new THREE.MeshBasicMaterial({
@@ -76,7 +76,7 @@
   surfaceGlow.position.y = 0.05;
   scene.add(surfaceGlow);
 
-  // 🌟 光源
+  // 光源
   scene.add(new THREE.DirectionalLight(0xffffff, 1.2).position.set(5, 15, 10));
   scene.add(new THREE.AmbientLight(0xffffff, 1.1));
 
@@ -172,13 +172,11 @@
     ripples.push(ripple);
   }
 
-  // 🕒 動畫
   const clock = new THREE.Clock();
   function animate() {
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
-    // 星星閃爍（可選）
     starMat.size = 1.0 + Math.sin(t * 2.5) * 0.2;
 
     reflectiveSphere.rotation.y += 0.01;
