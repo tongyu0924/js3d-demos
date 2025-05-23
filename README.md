@@ -22,4 +22,9 @@ A mysterious indoor setup using HDR environment mapping inside a weathered room,
 
 ---
 
+## 🧊 3. Colorful Geometry Playground
 
+A simple interactive scene with basic shapes (cube, torus, and cylinder) rendered in vibrant color gradients, designed for experimenting with geometry, lighting, and shading.
+
+**Preview**: [`index.html`](./geometry-playground/index.html)  
+![Geometry Playground](./img.png)
